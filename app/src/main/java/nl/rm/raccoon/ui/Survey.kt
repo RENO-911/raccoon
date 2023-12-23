@@ -21,10 +21,11 @@ import nl.rm.raccoon.domain.QuestionSet
 import nl.rm.raccoon.domain.QuestionSetImpl
 import nl.rm.raccoon.domain.Survey
 import nl.rm.raccoon.domain.SurveyImpl
+import nl.rm.raccoon.dsl.exampleSurvey
 
 @Composable
 fun Survey() {
-    val survey by remember { mutableStateOf(exampleQuestions) }
+    val survey by remember { mutableStateOf(exampleSurvey()) }
     var surveyWrapper by remember { mutableStateOf(wrap(survey)) }
 
     fun answer(question: Question, answer: String) {
@@ -168,39 +169,6 @@ fun MultiSelectQuestionField(
         }
     }
 }
-
-val exampleQuestions: Survey
-    get() {
-        val question1 = MultipleChoiceQuestion(
-            id = "1",
-            title = "What is your favorite color?",
-            options = setOf("Red", "Blue", "Green")
-        )
-        val question2 = MultipleChoiceQuestion(
-            id = "2",
-            title = "What is your favorite animal?",
-            options = setOf("Dog", "Cat", "Bird"),
-            isRelevant = { question1.answer == "Blue" }
-        )
-        val question3 = OpenQuestion(
-            id = "3",
-            title = "Describe your favorite animal?",
-            isRelevant = { question2.answer == "Dog" },
-            isValidWhen = { (answer?.length ?: 0) > 5 }
-        )
-        val question4 = MultiSelectQuestion(
-            id = "4",
-            title = "What are your favorite animals?",
-            options = setOf("Dog", "Cat", "Bird")
-        )
-
-        return SurveyImpl(
-            sets = listOf(
-                QuestionSetImpl(setOf(question1, question2)),
-                QuestionSetImpl(setOf(question3, question4))
-            )
-        )
-    }
 
 @Preview
 @Composable
