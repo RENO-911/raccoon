@@ -4,7 +4,7 @@ import nl.rm.raccoon.domain.Survey
 
 fun exampleSurvey(): Survey {
     return Survey {
-        set {
+        val setA = set {
             val question1 = multipleChoiceQuestion {
                 id = "1"
                 title = "What is your favorite food"
@@ -33,6 +33,21 @@ fun exampleSurvey(): Survey {
                 title = "Any other foods you like?"
                 options = setOf("Beans", "Rice", "Dogfood", "Pancakes")
                 releventWhen = { question3.isValid }
+            }
+        }
+        set {
+            val setBQuestion1 = openQuestion {
+                id = "B1"
+                title = "How would you describe your favorite color?"
+                releventWhen = { setA.isValid }
+                validWhen = { answer in listOf("Red", "Green", "Blue") }
+            }
+
+            val setBQuestion2 = multipleChoiceQuestion {
+                id = "B2"
+                title = "Are you lying?"
+                options = setOf("Yes", "No")
+                releventWhen = { setBQuestion1.isValid }
             }
         }
     }

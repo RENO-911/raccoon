@@ -24,7 +24,8 @@ fun QuestionSetBuilder?.multipleChoiceQuestion(
         val build = MultipleChoiceQuestion(
             id = id,
             title = title,
-            options = options
+            options = options,
+            isRelevant = releventWhen
         )
 
         defaultAnswer?.let { build.answer(it) }

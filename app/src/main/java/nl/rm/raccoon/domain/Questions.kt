@@ -11,7 +11,7 @@ interface Question {
     fun answer(answer: String)
 }
 
-class MultipleChoiceQuestion(
+data class MultipleChoiceQuestion(
     override val id: String,
     override val title: String,
     override val isRelevant: () -> Boolean = { true },
@@ -33,7 +33,7 @@ class MultipleChoiceQuestion(
     }
 }
 
-class OpenQuestion(
+data class OpenQuestion(
     override val id: String,
     override val title: String,
     override val isRelevant: () -> Boolean = { true },
@@ -51,7 +51,7 @@ class OpenQuestion(
     }
 }
 
-class MultiSelectQuestion(
+data class MultiSelectQuestion(
     override val id: String,
     override val title: String,
     override val isRelevant: () -> Boolean = { true },
