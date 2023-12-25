@@ -9,7 +9,7 @@ interface Survey {
 
     fun answer(question: Question, answer: String) {
         question.answer(answer)
-    }
+}
 }
 
 data class SurveyImpl(

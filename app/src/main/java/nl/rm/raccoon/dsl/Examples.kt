@@ -61,3 +61,12 @@ fun exampleSurvey(): Survey {
         }
     }
 }
+
+val singlePhotoQuestionSurvey = Survey {
+    set {
+        photoQuestion {
+            id = "1"
+            title = "Can you show us your favorite color?"
+        }
+    }
+}

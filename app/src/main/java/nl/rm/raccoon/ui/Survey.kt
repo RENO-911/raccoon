@@ -190,14 +190,14 @@ fun PhotoQuestionField(
 
     val uncompressedFolder = createTempDirectory(uncompressedFolderName)
     val compressedFolder = createTempDirectory(compressedFolderName)
-    val uncompressedUri = getUriForFile(context, kotlin.io.path.createTempFile("uncompressed", null).toFile()).toFile()
-    var compressedUri = getUriForFile(context, kotlin.io.path.createTempFile("compressed", null).toFile()).toFile()
+    val uncompressedUri = kotlin.io.path.createTempFile("uncompressed", null).toFile()
+    var compressedUri = kotlin.io.path.createTempFile("compressed", null).toFile()
 
     val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.TakePicture()) {
         if (it) {
             try {
                 compressedUri = compress(context, uncompressedUri, compressedUri, 50)
-                viewState = PhotoQuestionFieldState.Preview(compressedUri.toUri())
+                viewState = PhotoQuestionFieldState.Preview(getUriForFile(context, compressedUri))
             } catch (ex: Exception) {
                 Log.e("PhotoQuestionField", "Failed to compress image", ex)
             }
@@ -213,7 +213,7 @@ fun PhotoQuestionField(
             PhotoQuestionFieldState.NoneTaken -> {
                 Button(
                     onClick = {
-                        launcher.launch(uncompressedUri.toUri())
+                        launcher.launch(getUriForFile(context, uncompressedUri))
                     }
                 ) {
                     Text("Take picture")

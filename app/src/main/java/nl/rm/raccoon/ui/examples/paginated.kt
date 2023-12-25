@@ -27,6 +27,7 @@ import nl.rm.raccoon.R
 import nl.rm.raccoon.domain.Question
 import nl.rm.raccoon.domain.Survey
 import nl.rm.raccoon.dsl.exampleSurvey
+import nl.rm.raccoon.dsl.singlePhotoQuestionSurvey
 import nl.rm.raccoon.ui.QuestionFieldFactory
 import nl.rm.raccoon.ui.QuestionFieldFactoryImpl
 import nl.rm.raccoon.ui.QuestionSetWrapper
