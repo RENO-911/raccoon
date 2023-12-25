@@ -174,7 +174,7 @@ fun MultiSelectQuestionField(
 sealed class PhotoQuestionFieldState() {
     object NoneTaken : PhotoQuestionFieldState()
     object Taking: PhotoQuestionFieldState()
-    data class Preview(val uri: Uri): PhotoQuestionFieldState()
+    data class Preview(val file: File): PhotoQuestionFieldState()
 }
 @Composable
 fun PhotoQuestionField(
@@ -197,7 +197,7 @@ fun PhotoQuestionField(
         if (it) {
             try {
                 compressedUri = compress(context, uncompressedUri, compressedUri, 50)
-                viewState = PhotoQuestionFieldState.Preview(getUriForFile(context, compressedUri))
+                viewState = PhotoQuestionFieldState.Preview(compressedUri)
             } catch (ex: Exception) {
                 Log.e("PhotoQuestionField", "Failed to compress image", ex)
             }
@@ -223,8 +223,8 @@ fun PhotoQuestionField(
                 Text("Taking picture")
             }
             is PhotoQuestionFieldState.Preview -> {
-                val bitmapSource = ImageDecoder.createSource(context.contentResolver, (viewState as PhotoQuestionFieldState.Preview).uri)
-                val factory = BitmapFactory.Options().apply {
+                val bitmapSource = ImageDecoder.createSource((viewState as PhotoQuestionFieldState.Preview).file)
+                    val factory = BitmapFactory.Options().apply {
                     inJustDecodeBounds = false
                     inPreferredConfig = Bitmap.Config.RGB_565
                     inSampleSize = 4
