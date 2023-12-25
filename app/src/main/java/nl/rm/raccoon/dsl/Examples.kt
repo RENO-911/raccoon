@@ -4,6 +4,9 @@ import nl.rm.raccoon.domain.Survey
 
 fun exampleSurvey(): Survey {
     return Survey {
+        defaultValidators = listOf(
+
+        )
         val setA = set {
             val question1 = multipleChoiceQuestion {
                 id = "1"
@@ -25,7 +28,7 @@ fun exampleSurvey(): Survey {
                 id = "3"
                 title = "Why is this your favorite food?"
                 releventWhen = { question2.isValid && question2.answer == "yes"}
-                validWhen = { (answer?.length ?: 0) > 50 }
+                validWhen = { (answer?.length ?: 0) > 5 }
             }
 
             val question4 = multiSelectQuestion {
@@ -48,6 +51,12 @@ fun exampleSurvey(): Survey {
                 title = "Are you lying?"
                 options = setOf("Yes", "No")
                 releventWhen = { setBQuestion1.isValid }
+            }
+
+            val setBQuestion3 = photoQuestion {
+                id = "B3"
+                title = "Can you show us your favorite color?"
+                releventWhen = { setBQuestion2.isValid }
             }
         }
     }

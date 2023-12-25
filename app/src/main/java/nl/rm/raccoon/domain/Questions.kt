@@ -9,14 +9,26 @@ interface Question {
     val isValid: Boolean
 
     fun answer(answer: String)
+
+    val interactionState: InteractionState
+        get() = InteractionState.Untouched
+
+    enum class InteractionState {
+        Untouched,
+        Touched,
+    }
+}
+
+interface LimitedOptionsQuestion : Question {
+    val options: Set<String>
 }
 
 data class MultipleChoiceQuestion(
     override val id: String,
     override val title: String,
     override val isRelevant: () -> Boolean = { true },
-    val options: Set<String>
-) : Question {
+    override val options: Set<String>
+) : LimitedOptionsQuestion {
 
     override val isValidWhen: Question.() -> Boolean = {
         options.contains(answer)
@@ -55,8 +67,8 @@ data class MultiSelectQuestion(
     override val id: String,
     override val title: String,
     override val isRelevant: () -> Boolean = { true },
-    val options: Set<String>
-) : Question {
+    override val options: Set<String>
+) : LimitedOptionsQuestion {
 
     override val isValidWhen: Question.() -> Boolean = {
         options.containsAll(answer?.split(",") ?: emptyList())
@@ -75,5 +87,23 @@ data class MultiSelectQuestion(
         } else {
             _answer.add(answer)
         }
+    }
+}
+
+data class PhotoQuestion(
+    override val id: String,
+    override val title: String,
+    override val isRelevant: () -> Boolean = { true },
+    override val isValidWhen: Question.() -> Boolean = { true }
+) : Question {
+
+    override val isValid: Boolean
+        get() = isValidWhen()
+
+    override var answer: String? = null
+        private set
+
+    override fun answer(answer: String) {
+        this.answer = answer
     }
 }

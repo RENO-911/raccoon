@@ -3,6 +3,7 @@ package nl.rm.raccoon.dsl
 import nl.rm.raccoon.domain.MultiSelectQuestion
 import nl.rm.raccoon.domain.MultipleChoiceQuestion
 import nl.rm.raccoon.domain.OpenQuestion
+import nl.rm.raccoon.domain.PhotoQuestion
 import nl.rm.raccoon.domain.Question
 
 class MultipleChoiceQuestionBuilder() {
@@ -94,6 +95,37 @@ fun QuestionSetBuilder?.multiSelectQuestion(
         defaultAnswer?.let { build.answer(it) }
 
         this@multiSelectQuestion?.addQuestion(build)
+
+        return build
+    }
+}
+
+class PhotoQuestionBuilder() {
+    lateinit var id: String
+    lateinit var title: String
+    var defaultAnswer: String? = null
+    var releventWhen: () -> Boolean = { true }
+    var validWhen: Question.() -> Boolean = { true }
+}
+
+fun QuestionSetBuilder?.photoQuestion(
+    init: PhotoQuestionBuilder.() -> Unit
+): PhotoQuestion {
+    val builder = PhotoQuestionBuilder()
+
+    with(builder) {
+        init()
+
+        val build = PhotoQuestion(
+            id = id,
+            title = title,
+            isRelevant = releventWhen,
+            isValidWhen = validWhen
+        )
+
+        defaultAnswer?.let { build.answer(it) }
+
+        this@photoQuestion?.addQuestion(build)
 
         return build
     }

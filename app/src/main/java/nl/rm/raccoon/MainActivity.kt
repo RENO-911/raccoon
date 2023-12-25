@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import nl.rm.raccoon.ui.Survey
+import nl.rm.raccoon.ui.examples.ExamplePaginatedSurvey
 import nl.rm.raccoon.ui.theme.RaccoonTheme
 
 class MainActivity : ComponentActivity() {
@@ -25,7 +26,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Column {
-                        Survey()
+                        ExamplePaginatedSurvey()
                     }
                 }
             }

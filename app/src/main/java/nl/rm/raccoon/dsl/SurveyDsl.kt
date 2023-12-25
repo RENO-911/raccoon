@@ -8,6 +8,7 @@ class SurveyBuilder() {
     private val _questions = mutableSetOf<QuestionSet>()
     val questions: Set<QuestionSet> = _questions
     lateinit var title: String
+    var defaultValidators = emptyList<Boolean>()
 
     fun addSet(question: QuestionSet) {
         _questions.add(question)
