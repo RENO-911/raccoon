@@ -1,5 +1,7 @@
 package nl.rm.raccoon.domain
 
+import nl.rm.raccoon.domain.question.Question
+
 interface Survey {
     val questions: List<Question>
     val sets: List<QuestionSet>

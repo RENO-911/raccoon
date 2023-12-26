@@ -51,7 +51,26 @@ fun exampleSurvey(): Survey {
                 id = "3"
                 title = "Why is this your favorite food?"
                 releventWhen = { question2.isValid.isValid && question2.answer?.value == "yes"}
-                // TODO: validWhen = { (answer?.value?.length ?: 0) > 5 }
+                validWhen = validators(
+                    LambdaValidator(
+                        message = "Can't be blank",
+                        validator = {
+                            answer?.value?.isNotBlank() ?: false
+                        }
+                    ),
+                    LambdaValidator(
+                        message = "Can't be longer than 25 characters",
+                        validator = {
+                            (answer?.value?.length ?: 0) <= 25
+                        }
+                    ),
+                    LambdaValidator(
+                        message = "Can't be shorter than 5 characters",
+                        validator = {
+                            (answer?.value?.length ?: 0) >= 5
+                        }
+                    )
+                )
             }
 
             val question4 = multiSelectQuestion {

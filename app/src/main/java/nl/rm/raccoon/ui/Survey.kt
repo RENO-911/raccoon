@@ -33,19 +33,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import nl.rm.raccoon.client.compress
 import nl.rm.raccoon.client.getUriForFile
 import nl.rm.raccoon.domain.Answer
-import nl.rm.raccoon.domain.AnswerString
-import nl.rm.raccoon.domain.MultiSelectQuestion
-import nl.rm.raccoon.domain.MultipleChoiceQuestion
-import nl.rm.raccoon.domain.OpenQuestion
-import nl.rm.raccoon.domain.PhotoQuestion
-import nl.rm.raccoon.domain.Question
 import nl.rm.raccoon.domain.QuestionSet
 import nl.rm.raccoon.domain.Survey
+import nl.rm.raccoon.domain.question.Question
 import nl.rm.raccoon.dsl.exampleSurvey
+import nl.rm.raccoon.ui.questions.OnAnswerLambda
+import nl.rm.raccoon.ui.questions.QuestionWrapper
+import nl.rm.raccoon.ui.questions.wrap
 import java.io.File
 import kotlin.io.path.createTempDirectory
-
-internal typealias OnAnswerLambda = (Question, Answer) -> Unit
 
 @Composable
 fun Survey() {
@@ -67,13 +63,6 @@ fun Survey() {
         }
     }
 }
-
-data class QuestionWrapper<T>(
-    val question: T,
-    val answer: Answer? = question.answer
-) where T : Question
-
-fun <T : Question> wrap(question: T): QuestionWrapper<T> = QuestionWrapper(question)
 
 data class QuestionSetWrapper(
     val set: QuestionSet,
@@ -113,113 +102,6 @@ fun QuestionSection(
     }
 }
 
-@Composable
-fun MultipleChoiceQuestionField(
-    state: QuestionWrapper<MultipleChoiceQuestion>,
-    onAnswer: OnAnswerLambda
-) {
-    Column {
-        Text(state.question.title)
-        for (option in state.question.options) {
-            Row {
-                RadioButton(
-                    selected = option == state.question.answer,
-                    onClick = {
-                        onAnswer(state.question, option)
-                    })
-                Text(option.value)
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun OpenQuestionField(
-    state: QuestionWrapper<OpenQuestion>,
-    onAnswer: OnAnswerLambda
-) {
-    Column(
-    ) {
-        Text(state.question.title)
-        TextField(
-            value = state.question.answer?.value ?: "",
-            onValueChange = {
-                onAnswer(state.question, AnswerString(it))
-            }
-        )
-    }
-}
-
-@Composable
-fun MultiSelectQuestionField(
-    state: QuestionWrapper<MultiSelectQuestion>,
-    onAnswer: OnAnswerLambda
-) {
-    Column(
-
-    ) {
-        Text(state.question.title)
-        for (option in state.question.options) {
-            Row {
-                Checkbox(
-                    checked = state.question.answer?.value?.contains(option.value) ?: false,
-                    onCheckedChange = { onAnswer(state.question, option) }
-                )
-                Text(option.value)
-            }
-        }
-    }
-}
-
-@Composable
-fun PhotoQuestionField(
-    state: QuestionWrapper<PhotoQuestion>,
-    onAnswer: OnAnswerLambda,
-) {
-    val context = LocalContext.current.findActivity()
-
-    val uncompressedUri = kotlin.io.path.createTempFile("uncompressed", null).toFile()
-    var compressedUri = kotlin.io.path.createTempFile("compressed", null).toFile()
-
-    val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.TakePicture()) {
-        if (it) {
-            try {
-                compressedUri = compress(context, uncompressedUri, compressedUri, 50)
-                onAnswer(state.question, AnswerString(compressedUri.absolutePath))
-            } catch (ex: Exception) {
-                Log.e("PhotoQuestionField", "Failed to compress image", ex)
-            }
-        } else {
-            Log.e("PhotoQuestionField", "Failed to take picture")
-        }
-    }
-
-    Column(
-    ) {
-        Text(state.question.title)
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                launcher.launch(getUriForFile(context, uncompressedUri))
-            }
-        ) {
-            Text("Take picture")
-        }
-
-        if (state.answer != null) {
-            val bitmap = ImageDecoder.createSource(File(state.answer.value)).let {
-                ImageDecoder
-                    .decodeBitmap(it)
-                    .asImageBitmap()
-            }
-            Image(
-                bitmap = bitmap,
-                contentDescription = "Selected photo"
-            )
-        }
-    }
-}
 
 fun Context.findActivity(): Activity {
     var context = this

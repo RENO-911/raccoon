@@ -1,14 +1,14 @@
-package nl.rm.raccoon.ui
+package nl.rm.raccoon.ui.questions
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import nl.rm.raccoon.domain.Answer
-import nl.rm.raccoon.domain.MultiSelectQuestion
-import nl.rm.raccoon.domain.MultipleChoiceQuestion
-import nl.rm.raccoon.domain.OpenQuestion
-import nl.rm.raccoon.domain.PhotoQuestion
-import nl.rm.raccoon.domain.Question
 import nl.rm.raccoon.domain.ValidationResult
+import nl.rm.raccoon.domain.question.AddressQuestion
+import nl.rm.raccoon.domain.question.MultiSelectQuestion
+import nl.rm.raccoon.domain.question.MultipleChoiceQuestion
+import nl.rm.raccoon.domain.question.OpenQuestion
+import nl.rm.raccoon.domain.question.PhotoQuestion
+import nl.rm.raccoon.domain.question.Question
 import nl.rm.raccoon.ui.examples.InvalidAnswer
 import nl.rm.raccoon.ui.examples.QuestionColumn
 
@@ -49,6 +49,10 @@ class QuestionFieldFactoryImpl(
                 is PhotoQuestion -> PhotoQuestionField(
                     question as QuestionWrapper<PhotoQuestion>,
                     onAnswer
+                )
+
+                is AddressQuestion -> AddressQuestionField(
+
                 )
             }
 
