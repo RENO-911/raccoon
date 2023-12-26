@@ -1,5 +1,7 @@
 package nl.rm.raccoon.ui.examples
 
+import android.graphics.ImageDecoder
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,13 +23,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role.Companion.Button
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import nl.rm.raccoon.R
 import nl.rm.raccoon.domain.Answer
+import nl.rm.raccoon.domain.PhotoQuestion
 import nl.rm.raccoon.domain.Question
 import nl.rm.raccoon.domain.Survey
 import nl.rm.raccoon.dsl.exampleSurvey
@@ -39,6 +45,7 @@ import nl.rm.raccoon.ui.QuestionSetWrapper
 import nl.rm.raccoon.ui.QuestionWrapper
 import nl.rm.raccoon.ui.SurveyWrapper
 import nl.rm.raccoon.ui.wrap
+import java.io.File
 
 
 @Preview
@@ -102,7 +109,24 @@ fun SurveySummaryPage(survey: SurveyWrapper, onBack: () -> Unit) {
             for (question in survey.questions.filter { it.question.isRelevant() }) {
                 Spacer(modifier = Modifier.padding(bottom = 8.dp))
                 Text(text = question.question.title, fontWeight = FontWeight.Bold)
-                Text(text = question.answer?.value ?: "No answer")
+                if (question.question is PhotoQuestion && question.answer != null) {
+                    val bitmap = ImageDecoder.createSource(File(question.answer.value)).let {
+                        ImageDecoder
+                            .decodeBitmap(it)
+                            .asImageBitmap()
+                    }
+                    Image(
+                        bitmap = bitmap,
+                        contentDescription = "Selected photo"
+                    )
+                } else {
+                    Text(text = question.answer?.value ?: "No answer")
+                }
+                if (question.answer?.properties?.isEmpty() == false) {
+                    for (property in question.answer.properties) {
+                        Text(text = "${property.key}: ${property.value}", style = TextStyle(fontStyle = FontStyle.Italic))
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.padding(bottom = 8.dp))

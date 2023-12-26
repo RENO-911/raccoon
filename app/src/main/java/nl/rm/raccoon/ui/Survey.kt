@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -171,26 +172,13 @@ fun MultiSelectQuestionField(
     }
 }
 
-
-sealed class PhotoQuestionFieldState() {
-    object NoneTaken : PhotoQuestionFieldState()
-    object Taking: PhotoQuestionFieldState()
-    data class Preview(val file: File): PhotoQuestionFieldState()
-}
 @Composable
 fun PhotoQuestionField(
     state: QuestionWrapper<PhotoQuestion>,
     onAnswer: OnAnswerLambda,
 ) {
     val context = LocalContext.current.findActivity()
-    val cachedFileName = "${state.question.id}_upload.tmp"
-    val uncompressedFolderName = "original"
-    val compressedFolderName = "compressed"
 
-    var viewState by remember { mutableStateOf<PhotoQuestionFieldState>(PhotoQuestionFieldState.NoneTaken) }
-
-    val uncompressedFolder = createTempDirectory(uncompressedFolderName)
-    val compressedFolder = createTempDirectory(compressedFolderName)
     val uncompressedUri = kotlin.io.path.createTempFile("uncompressed", null).toFile()
     var compressedUri = kotlin.io.path.createTempFile("compressed", null).toFile()
 
@@ -198,7 +186,7 @@ fun PhotoQuestionField(
         if (it) {
             try {
                 compressedUri = compress(context, uncompressedUri, compressedUri, 50)
-                viewState = PhotoQuestionFieldState.Preview(compressedUri)
+                onAnswer(state.question, AnswerString(compressedUri.absolutePath))
             } catch (ex: Exception) {
                 Log.e("PhotoQuestionField", "Failed to compress image", ex)
             }
@@ -210,32 +198,25 @@ fun PhotoQuestionField(
     Column(
     ) {
         Text(state.question.title)
-        when(viewState) {
-            PhotoQuestionFieldState.NoneTaken -> {
-                Button(
-                    onClick = {
-                        launcher.launch(getUriForFile(context, uncompressedUri))
-                    }
-                ) {
-                    Text("Take picture")
-                }
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = {
+                launcher.launch(getUriForFile(context, uncompressedUri))
             }
-            PhotoQuestionFieldState.Taking -> {
-                Text("Taking picture")
+        ) {
+            Text("Take picture")
+        }
+
+        if (state.answer != null) {
+            val bitmap = ImageDecoder.createSource(File(state.answer.value)).let {
+                ImageDecoder
+                    .decodeBitmap(it)
+                    .asImageBitmap()
             }
-            is PhotoQuestionFieldState.Preview -> {
-                val bitmapSource = ImageDecoder.createSource((viewState as PhotoQuestionFieldState.Preview).file)
-                    val factory = BitmapFactory.Options().apply {
-                    inJustDecodeBounds = false
-                    inPreferredConfig = Bitmap.Config.RGB_565
-                    inSampleSize = 4
-                }
-                val bitmap = ImageDecoder.decodeBitmap(bitmapSource)
-                Image(
-                    bitmap = bitmap.asImageBitmap(),
-                    contentDescription = "Photo"
-                )
-            }
+            Image(
+                bitmap = bitmap,
+                contentDescription = "Selected photo"
+            )
         }
     }
 }
