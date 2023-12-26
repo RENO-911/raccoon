@@ -216,10 +216,12 @@ fun QuestionColumn(
 }
 
 @Composable
-fun InvalidAnswer() {
+fun InvalidAnswer(
+    message: String
+) {
     Row {
        Text(
-           text = "Invalid answer",
+           text = message,
            color = Color.Red
        )
     }

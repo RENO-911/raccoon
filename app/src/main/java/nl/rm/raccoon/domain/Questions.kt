@@ -5,8 +5,8 @@ interface Question {
     val title: String
     val answer: Answer?
     val isRelevant: () -> Boolean
-    val isValidWhen: Question.() -> Boolean
-    val isValid: Boolean
+    val isValidWhen: Validator
+    val isValid: ValidationResult
 
     fun answer(answer: Answer)
 
@@ -30,12 +30,18 @@ data class MultipleChoiceQuestion(
     override val options: Set<Answer>
 ) : LimitedOptionsQuestion {
 
-    override val isValidWhen: Question.() -> Boolean = {
-        options.contains(answer)
-    }
+    override val isValidWhen: Validator
+        get() {
+            return LambdaValidator(
+                message = "Please select one of the available options",
+                validator = {
+                    options.contains(answer)
+                }
+            )
+        }
 
-    override val isValid: Boolean
-        get() = isValidWhen()
+    override val isValid: ValidationResult
+        get() = isValidWhen.isValid(this)
 
     override var answer: Answer? = null
         private set
@@ -49,11 +55,11 @@ data class OpenQuestion(
     override val id: String,
     override val title: String,
     override val isRelevant: () -> Boolean = { true },
-    override val isValidWhen: Question.() -> Boolean = { true }
+    override val isValidWhen: Validator
 ) : Question {
 
-    override val isValid: Boolean
-        get() = isValidWhen()
+    override val isValid: ValidationResult
+        get() = isValidWhen.isValid(this)
 
     override var answer: Answer? = null
         private set
@@ -70,13 +76,18 @@ data class MultiSelectQuestion(
     override val options: Set<Answer>
 ) : LimitedOptionsQuestion {
 
-    override val isValidWhen: Question.() -> Boolean = {
-        // TODO: Check this possibly broken implementation :D
-        options.map { it.value }.containsAll(answer?.value?.split(",") ?: emptyList())
-    }
+    override val isValidWhen: Validator
+        get() {
+            return LambdaValidator(
+                message = "Please select one of the available options",
+                validator = {
+                    // TODO: Check this possibly broken implementation :D
+                    options.map { it.value }.containsAll(answer?.value?.split(",") ?: emptyList())                }
+            )
+        }
 
-    override val isValid: Boolean
-        get() = isValidWhen()
+    override val isValid: ValidationResult
+        get() = isValidWhen.isValid(this)
 
     private val _answer = mutableSetOf<Answer>()
     override val answer: Answer?
@@ -95,11 +106,11 @@ data class PhotoQuestion(
     override val id: String,
     override val title: String,
     override val isRelevant: () -> Boolean = { true },
-    override val isValidWhen: Question.() -> Boolean = { true }
+    override val isValidWhen: Validator
 ) : Question {
 
-    override val isValid: Boolean
-        get() = isValidWhen()
+    override val isValid: ValidationResult
+        get() = isValidWhen.isValid(this)
 
     override var answer: Answer? = null
         private set

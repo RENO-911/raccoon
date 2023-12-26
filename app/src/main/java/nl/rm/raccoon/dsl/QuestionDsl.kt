@@ -1,5 +1,6 @@
 package nl.rm.raccoon.dsl
 
+import nl.rm.raccoon.domain.AlwaysValidValidator
 import nl.rm.raccoon.domain.Answer
 import nl.rm.raccoon.domain.AnswerString
 import nl.rm.raccoon.domain.MultiSelectQuestion
@@ -7,6 +8,8 @@ import nl.rm.raccoon.domain.MultipleChoiceQuestion
 import nl.rm.raccoon.domain.OpenQuestion
 import nl.rm.raccoon.domain.PhotoQuestion
 import nl.rm.raccoon.domain.Question
+import nl.rm.raccoon.domain.ValidationResult
+import nl.rm.raccoon.domain.Validator
 
 class MultipleChoiceQuestionBuilder() {
     lateinit var id: String
@@ -14,7 +17,7 @@ class MultipleChoiceQuestionBuilder() {
     lateinit var options: Set<Answer>
     var defaultAnswer: Answer? = null
     var releventWhen: () -> Boolean = { true }
-    lateinit var validWhen: Question.() -> Boolean
+    lateinit var validWhen: Validator
 }
 
 fun QuestionSetBuilder?.multipleChoiceQuestion(
@@ -44,7 +47,7 @@ class OpenQuestionBuilder() {
     lateinit var title: String
     var defaultAnswer: Answer? = null
     var releventWhen: () -> Boolean = { true }
-    lateinit var validWhen: Question.() -> Boolean
+    var validWhen: Validator = AlwaysValidValidator
 }
 
 fun QuestionSetBuilder?.openQuestion(
@@ -76,7 +79,7 @@ class MultiSelectQuestionBuilder() {
     lateinit var options: Set<Answer>
     var defaultAnswer: Answer? = null
     var releventWhen: () -> Boolean = { true }
-    lateinit var validWhen: Question.() -> Boolean
+    lateinit var validWhen: Validator
 }
 
 fun QuestionSetBuilder?.multiSelectQuestion(
@@ -107,7 +110,11 @@ class PhotoQuestionBuilder() {
     lateinit var title: String
     var defaultAnswer: Answer? = null
     var releventWhen: () -> Boolean = { true }
-    var validWhen: Question.() -> Boolean = { true }
+    var validWhen: Validator = object : Validator {
+        override fun isValid(question: Question): ValidationResult {
+            return ValidationResult.Valid
+        }
+    }
 }
 
 fun QuestionSetBuilder?.photoQuestion(

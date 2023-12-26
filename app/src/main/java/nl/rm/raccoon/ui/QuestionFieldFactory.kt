@@ -8,6 +8,7 @@ import nl.rm.raccoon.domain.MultipleChoiceQuestion
 import nl.rm.raccoon.domain.OpenQuestion
 import nl.rm.raccoon.domain.PhotoQuestion
 import nl.rm.raccoon.domain.Question
+import nl.rm.raccoon.domain.ValidationResult
 import nl.rm.raccoon.ui.examples.InvalidAnswer
 import nl.rm.raccoon.ui.examples.QuestionColumn
 
@@ -51,10 +52,10 @@ class QuestionFieldFactoryImpl(
                 )
             }
 
-            if (!question.question.isValid) {
-                InvalidAnswer()
+            val validationResult = question.question.isValid
+            if (validationResult is ValidationResult.Invalid) {
+                InvalidAnswer(validationResult.message)
             }
         }
     }
-
 }
