@@ -6,7 +6,6 @@ import android.content.ContextWrapper
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
-import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,11 +29,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.content.FileProvider
-import androidx.core.net.toFile
-import androidx.core.net.toUri
 import nl.rm.raccoon.client.compress
 import nl.rm.raccoon.client.getUriForFile
+import nl.rm.raccoon.domain.Answer
+import nl.rm.raccoon.domain.AnswerString
 import nl.rm.raccoon.domain.MultiSelectQuestion
 import nl.rm.raccoon.domain.MultipleChoiceQuestion
 import nl.rm.raccoon.domain.OpenQuestion
@@ -45,8 +43,8 @@ import nl.rm.raccoon.domain.Survey
 import nl.rm.raccoon.dsl.exampleSurvey
 import java.io.File
 import kotlin.io.path.createTempDirectory
-import kotlin.io.path.pathString
 
+internal typealias OnAnswerLambda = (Question, Answer) -> Unit
 
 @Composable
 fun Survey() {
@@ -55,7 +53,7 @@ fun Survey() {
 
     val scrollState = rememberScrollState()
 
-    fun answer(question: Question, answer: String) {
+    fun answer(question: Question, answer: Answer) {
         survey.answer(question, answer)
         surveyWrapper = wrap(survey)
     }
@@ -71,7 +69,7 @@ fun Survey() {
 
 data class QuestionWrapper<T>(
     val question: T,
-    val answer: String? = question.answer
+    val answer: Answer? = question.answer
 ) where T : Question
 
 fun <T : Question> wrap(question: T): QuestionWrapper<T> = QuestionWrapper(question)
@@ -104,7 +102,8 @@ fun wrap(survey: Survey): SurveyWrapper {
 @Composable
 fun QuestionSection(
     set: QuestionSetWrapper,
-    onAnswer: (Question, String) -> Unit) {
+    onAnswer: OnAnswerLambda
+) {
     Column {
         for(question in set.questions) {
            // QuestionField(question, onAnswer)
@@ -116,7 +115,8 @@ fun QuestionSection(
 @Composable
 fun MultipleChoiceQuestionField(
     state: QuestionWrapper<MultipleChoiceQuestion>,
-    onAnswer: (Question, String) -> Unit) {
+    onAnswer: OnAnswerLambda
+) {
     Column {
         Text(state.question.title)
         for (option in state.question.options) {
@@ -126,7 +126,7 @@ fun MultipleChoiceQuestionField(
                     onClick = {
                         onAnswer(state.question, option)
                     })
-                Text(option)
+                Text(option.value)
             }
         }
     }
@@ -136,14 +136,15 @@ fun MultipleChoiceQuestionField(
 @Composable
 fun OpenQuestionField(
     state: QuestionWrapper<OpenQuestion>,
-    onAnswer: (Question, String) -> Unit) {
+    onAnswer: OnAnswerLambda
+) {
     Column(
     ) {
         Text(state.question.title)
         TextField(
-            value = state.question.answer ?: "",
+            value = state.question.answer?.value ?: "",
             onValueChange = {
-                onAnswer(state.question, it)
+                onAnswer(state.question, AnswerString(it))
             }
         )
     }
@@ -152,7 +153,7 @@ fun OpenQuestionField(
 @Composable
 fun MultiSelectQuestionField(
     state: QuestionWrapper<MultiSelectQuestion>,
-    onAnswer: (Question, String) -> Unit
+    onAnswer: OnAnswerLambda
 ) {
     Column(
 
@@ -161,10 +162,10 @@ fun MultiSelectQuestionField(
         for (option in state.question.options) {
             Row {
                 Checkbox(
-                    checked = state.question.answer?.contains(option) ?: false,
+                    checked = state.question.answer?.value?.contains(option.value) ?: false,
                     onCheckedChange = { onAnswer(state.question, option) }
                 )
-                Text(option)
+                Text(option.value)
             }
         }
     }
@@ -179,7 +180,7 @@ sealed class PhotoQuestionFieldState() {
 @Composable
 fun PhotoQuestionField(
     state: QuestionWrapper<PhotoQuestion>,
-    onAnswer: (Question, String) -> Unit,
+    onAnswer: OnAnswerLambda,
 ) {
     val context = LocalContext.current.findActivity()
     val cachedFileName = "${state.question.id}_upload.tmp"

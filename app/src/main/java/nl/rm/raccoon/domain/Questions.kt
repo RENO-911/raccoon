@@ -3,12 +3,12 @@ package nl.rm.raccoon.domain
 interface Question {
     val id: String
     val title: String
-    val answer: String?
+    val answer: Answer?
     val isRelevant: () -> Boolean
     val isValidWhen: Question.() -> Boolean
     val isValid: Boolean
 
-    fun answer(answer: String)
+    fun answer(answer: Answer)
 
     val interactionState: InteractionState
         get() = InteractionState.Untouched
@@ -20,14 +20,14 @@ interface Question {
 }
 
 interface LimitedOptionsQuestion : Question {
-    val options: Set<String>
+    val options: Set<Answer>
 }
 
 data class MultipleChoiceQuestion(
     override val id: String,
     override val title: String,
     override val isRelevant: () -> Boolean = { true },
-    override val options: Set<String>
+    override val options: Set<Answer>
 ) : LimitedOptionsQuestion {
 
     override val isValidWhen: Question.() -> Boolean = {
@@ -37,10 +37,10 @@ data class MultipleChoiceQuestion(
     override val isValid: Boolean
         get() = isValidWhen()
 
-    override var answer: String? = null
+    override var answer: Answer? = null
         private set
 
-    override fun answer(answer: String) {
+    override fun answer(answer: Answer) {
         this.answer = answer
     }
 }
@@ -55,10 +55,10 @@ data class OpenQuestion(
     override val isValid: Boolean
         get() = isValidWhen()
 
-    override var answer: String? = null
+    override var answer: Answer? = null
         private set
 
-    override fun answer(answer: String) {
+    override fun answer(answer: Answer) {
         this.answer = answer
     }
 }
@@ -67,21 +67,22 @@ data class MultiSelectQuestion(
     override val id: String,
     override val title: String,
     override val isRelevant: () -> Boolean = { true },
-    override val options: Set<String>
+    override val options: Set<Answer>
 ) : LimitedOptionsQuestion {
 
     override val isValidWhen: Question.() -> Boolean = {
-        options.containsAll(answer?.split(",") ?: emptyList())
+        // TODO: Check this possibly broken implementation :D
+        options.map { it.value }.containsAll(answer?.value?.split(",") ?: emptyList())
     }
 
     override val isValid: Boolean
         get() = isValidWhen()
 
-    private val _answer = mutableSetOf<String>()
-    override val answer: String?
-        get() = if (_answer.isEmpty()) null else _answer.joinToString(",")
+    private val _answer = mutableSetOf<Answer>()
+    override val answer: Answer?
+        get() = if (_answer.isEmpty()) null else AnswerString(_answer.joinToString(",") { it.value })
 
-    override fun answer(answer: String) {
+    override fun answer(answer: Answer) {
         if (_answer.contains(answer)) {
             _answer.remove(answer)
         } else {
@@ -100,10 +101,10 @@ data class PhotoQuestion(
     override val isValid: Boolean
         get() = isValidWhen()
 
-    override var answer: String? = null
+    override var answer: Answer? = null
         private set
 
-    override fun answer(answer: String) {
+    override fun answer(answer: Answer) {
         this.answer = answer
     }
 }

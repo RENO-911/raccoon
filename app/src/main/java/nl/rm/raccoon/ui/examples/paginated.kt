@@ -4,12 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,17 +23,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role.Companion.Button
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import nl.rm.raccoon.R
+import nl.rm.raccoon.domain.Answer
 import nl.rm.raccoon.domain.Question
 import nl.rm.raccoon.domain.Survey
 import nl.rm.raccoon.dsl.exampleSurvey
 import nl.rm.raccoon.dsl.singlePhotoQuestionSurvey
+import nl.rm.raccoon.ui.OnAnswerLambda
 import nl.rm.raccoon.ui.QuestionFieldFactory
 import nl.rm.raccoon.ui.QuestionFieldFactoryImpl
 import nl.rm.raccoon.ui.QuestionSetWrapper
 import nl.rm.raccoon.ui.QuestionWrapper
+import nl.rm.raccoon.ui.SurveyWrapper
 import nl.rm.raccoon.ui.wrap
 
 
@@ -49,7 +55,7 @@ fun PaginatedSurvey(survey: Survey) {
     var wrappedSurvey by remember { mutableStateOf(wrap(survey)) }
     var currentPage by remember { mutableStateOf(0) }
 
-    fun answer(question: Question, answer: String) {
+    fun answer(question: Question, answer: Answer) {
         survey.answer(question, answer)
         wrappedSurvey = wrap(survey)
     }
@@ -61,9 +67,16 @@ fun PaginatedSurvey(survey: Survey) {
     }
 
     fun forward() {
-        if (currentPage < (wrappedSurvey.sets.size - 1)) currentPage++
+        if (currentPage < (wrappedSurvey.sets.size)) currentPage++
     }
 
+    if (currentPage == wrappedSurvey.sets.size) {
+        SurveySummaryPage(
+            survey = wrappedSurvey,
+            onBack = ::back
+        )
+        return
+    }
     QuestionSetPage(
         questionFieldFactory = questionFieldFactory,
         set = wrappedSurvey.sets[currentPage],
@@ -71,6 +84,39 @@ fun PaginatedSurvey(survey: Survey) {
         onBack = ::back,
         onForward = ::forward
     )
+
+}
+
+@Composable
+fun SurveySummaryPage(survey: SurveyWrapper, onBack: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(8.dp),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(
+
+        ) {
+            for (question in survey.questions.filter { it.question.isRelevant() }) {
+                Spacer(modifier = Modifier.padding(bottom = 8.dp))
+                Text(text = question.question.title, fontWeight = FontWeight.Bold)
+                Text(text = question.answer?.value ?: "No answer")
+            }
+
+            Spacer(modifier = Modifier.padding(bottom = 8.dp))
+            Divider()
+            Spacer(modifier = Modifier.padding(bottom = 8.dp))
+            Text("Thank you for filling out this survey!")
+        }
+
+        Button(
+            onClick = onBack
+        ) {
+            Text("Back")
+        }
+    }
 
 }
 
@@ -82,7 +128,7 @@ fun PaginatedSurvey(survey: Survey) {
 fun QuestionSetPage(
     questionFieldFactory: QuestionFieldFactory,
     set: QuestionSetWrapper,
-    onAnswer: (Question, String) -> Unit,
+    onAnswer: OnAnswerLambda,
     onBack: () -> Unit,
     onForward: () -> Unit
 ) {

@@ -7,7 +7,7 @@ interface Survey {
     val isValid: Boolean
         get() = sets.all { it.isValid }
 
-    fun answer(question: Question, answer: String) {
+    fun answer(question: Question, answer: Answer) {
         question.answer(answer)
 }
 }

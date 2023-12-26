@@ -1,5 +1,7 @@
 package nl.rm.raccoon.dsl
 
+import nl.rm.raccoon.domain.Answer
+import nl.rm.raccoon.domain.AnswerString
 import nl.rm.raccoon.domain.MultiSelectQuestion
 import nl.rm.raccoon.domain.MultipleChoiceQuestion
 import nl.rm.raccoon.domain.OpenQuestion
@@ -9,8 +11,8 @@ import nl.rm.raccoon.domain.Question
 class MultipleChoiceQuestionBuilder() {
     lateinit var id: String
     lateinit var title: String
-    lateinit var options: Set<String>
-    var defaultAnswer: String? = null
+    lateinit var options: Set<Answer>
+    var defaultAnswer: Answer? = null
     var releventWhen: () -> Boolean = { true }
     lateinit var validWhen: Question.() -> Boolean
 }
@@ -40,7 +42,7 @@ fun QuestionSetBuilder?.multipleChoiceQuestion(
 class OpenQuestionBuilder() {
     lateinit var id: String
     lateinit var title: String
-    var defaultAnswer: String? = null
+    var defaultAnswer: Answer? = null
     var releventWhen: () -> Boolean = { true }
     lateinit var validWhen: Question.() -> Boolean
 }
@@ -71,8 +73,8 @@ fun QuestionSetBuilder?.openQuestion(
 class MultiSelectQuestionBuilder() {
     lateinit var id: String
     lateinit var title: String
-    lateinit var options: Set<String>
-    var defaultAnswer: String? = null
+    lateinit var options: Set<Answer>
+    var defaultAnswer: Answer? = null
     var releventWhen: () -> Boolean = { true }
     lateinit var validWhen: Question.() -> Boolean
 }
@@ -103,7 +105,7 @@ fun QuestionSetBuilder?.multiSelectQuestion(
 class PhotoQuestionBuilder() {
     lateinit var id: String
     lateinit var title: String
-    var defaultAnswer: String? = null
+    var defaultAnswer: Answer? = null
     var releventWhen: () -> Boolean = { true }
     var validWhen: Question.() -> Boolean = { true }
 }
@@ -130,3 +132,5 @@ fun QuestionSetBuilder?.photoQuestion(
         return build
     }
 }
+
+fun String.asAnswer(): Answer = AnswerString(this)

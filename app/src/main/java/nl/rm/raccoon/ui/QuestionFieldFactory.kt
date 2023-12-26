@@ -2,6 +2,7 @@ package nl.rm.raccoon.ui
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import nl.rm.raccoon.domain.Answer
 import nl.rm.raccoon.domain.MultiSelectQuestion
 import nl.rm.raccoon.domain.MultipleChoiceQuestion
 import nl.rm.raccoon.domain.OpenQuestion
@@ -18,7 +19,7 @@ interface QuestionFieldFactory {
 }
 @Suppress("UNCHECKED_CAST")
 class QuestionFieldFactoryImpl(
-    private val onAnswer: (Question, String) -> Unit
+    private val onAnswer: (Question, Answer) -> Unit
 ) : QuestionFieldFactory {
     @Composable
     override fun invoke(question: QuestionWrapper<*>) {
